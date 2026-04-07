@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "4318:4318"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - collector-1
+      - collector-2
+      - collector-3
+
+  collector-1:
+    image: otel/opentelemetry-collector-contrib:0.149.0
+    volumes:
+      - ./otel/collector.yml:/etc/otelcol-contrib/config.yaml:ro
+
+  collector-2:
+    image: otel/opentelemetry-collector-contrib:0.149.0
+    volumes:
+      - ./otel/collector.yml:/etc/otelcol-contrib/config.yaml:ro
+
+  collector-3:
+    image: otel/opentelemetry-collector-contrib:0.149.0
+    volumes:
+      - ./otel/collector.yml:/etc/otelcol-contrib/config.yaml:ro
+
+  mimir:
+    image: grafana/mimir:2.17.0
+    command:
+      - -config.file=/etc/mimir/mimir.yml
+      - -target=all
+    ports:
+      - "9010:9009"
+    volumes:
+      - ./mimir/mimir.yml:/etc/mimir/mimir.yml:ro
+      - mimir-data:/data
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+
+volumes:
+  mimir-data:

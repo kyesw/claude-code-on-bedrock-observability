@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: otel-collectors
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/part-of: claude-code-observability
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+
+      batch:
+        send_batch_size: 1000
+        timeout: 5s
+
+    exporters:
+      otlphttp:
+        # ── EDIT THIS ──
+        # Point to your Mimir distributor's OTLP endpoint.
+        # If Mimir is in the same cluster:
+        #   http://mimir-distributor.mimir.svc.cluster.local:8080/otlp
+        # If external:
+        #   https://mimir.example.com/otlp
+        endpoint: http://mimir-distributor.mimir.svc.cluster.local:8080/otlp
+
+    service:
+      telemetry:
+        logs:
+          level: info
+        metrics:
+          address: 0.0.0.0:8888
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlphttp]

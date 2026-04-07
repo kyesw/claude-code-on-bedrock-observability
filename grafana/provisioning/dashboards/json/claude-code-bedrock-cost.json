@@ -1,0 +1,266 @@
+{
+  "uid": "claude-code-bedrock-cost",
+  "title": "Claude Code — Bedrock Cost & Usage",
+  "description": "Token usage and estimated Bedrock cost from Claude Code OTel metrics. Cost is computed from token counts using Bedrock pricing rates, not from claude_code_cost_usage (which uses Anthropic direct API rates).",
+  "tags": ["claude-code", "bedrock", "cost"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "user_id",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+        "query": "label_values(claude_code_token_usage, user_id)",
+        "includeAll": true,
+        "multi": true,
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "refresh": 2
+      },
+      {
+        "name": "model",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+        "query": "label_values(claude_code_token_usage, model)",
+        "includeAll": true,
+        "multi": true,
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "refresh": 2
+      },
+      {
+        "name": "bedrock_region_multiplier",
+        "type": "custom",
+        "label": "Bedrock Endpoint Type",
+        "query": "Global (standard) : 1, Regional (+10%) : 1.1",
+        "current": { "selected": true, "text": "Global (standard)", "value": "1" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Estimated Bedrock Cost (Total)",
+      "description": "Total estimated cost using Bedrock on-demand pricing. Computed from token counts, not from claude_code_cost_usage.",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "(\n  sum(increase(claude_code_token_usage{model=~\"$model\", user_id=~\"$user_id\", type=\"input\"}[$__range])) by (model) / 1e6\n  * on(model) group_left label_replace(label_replace(label_replace(label_replace(label_replace(\n    vector(0),\n    \"model\", \"claude-opus-4-6\", \"\", \"\"),\n    \"__name__\", \"\", \"\", \"\"),\n    \"__name__\", \"\", \"\", \"\"),\n    \"__name__\", \"\", \"\", \"\"),\n    \"__name__\", \"\", \"\", \"\")\n  * 0 + on() group_left\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"input\"}[$__range])) / 1e6 * 5\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"output\"}[$__range])) / 1e6 * 25\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"cacheRead\"}[$__range])) / 1e6 * 0.5\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"cacheCreation\"}[$__range])) / 1e6 * 6.25\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"input\"}[$__range])) / 1e6 * 3\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"output\"}[$__range])) / 1e6 * 15\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"cacheRead\"}[$__range])) / 1e6 * 0.3\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"cacheCreation\"}[$__range])) / 1e6 * 3.75\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"input\"}[$__range])) / 1e6 * 1\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"output\"}[$__range])) / 1e6 * 5\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"cacheRead\"}[$__range])) / 1e6 * 0.1\n    or vector(0)\n  )\n  +\n  (\n    sum(increase(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"cacheCreation\"}[$__range])) / 1e6 * 1.25\n    or vector(0)\n  )\n) * $bedrock_region_multiplier",
+          "legendFormat": "Total Bedrock Cost",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Total Sessions",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 3, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [
+        {
+          "expr": "sum(increase(claude_code_session_count{user_id=~\"$user_id\"}[$__range]))",
+          "legendFormat": "Sessions",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Total Tokens",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 3, "x": 9, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [
+        {
+          "expr": "sum(increase(claude_code_token_usage{model=~\"$model\", user_id=~\"$user_id\"}[$__range]))",
+          "legendFormat": "Tokens",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Claude Code Cost vs Bedrock Estimate",
+      "description": "Compares claude_code_cost_usage (Anthropic direct API rates) against estimated Bedrock cost (computed from token counts). Any gap indicates pricing model differences.",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" } },
+      "targets": [
+        {
+          "expr": "sum(increase(claude_code_cost_usage{user_id=~\"$user_id\"}[$__range]))",
+          "legendFormat": "Claude Code metric (Anthropic rates)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Bedrock Cost Over Time by Model",
+      "description": "Estimated Bedrock cost rate ($/hr) computed from token usage rates and Bedrock pricing.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": { "fillOpacity": 15, "stacking": { "mode": "normal" } }
+        }
+      },
+      "options": { "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "expr": "(\n  sum(rate(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"input\"}[5m])) / 1e6 * 5 +\n  sum(rate(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"output\"}[5m])) / 1e6 * 25 +\n  (sum(rate(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"cacheRead\"}[5m])) / 1e6 * 0.5 or vector(0)) +\n  (sum(rate(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"cacheCreation\"}[5m])) / 1e6 * 6.25 or vector(0))\n) * 3600 * $bedrock_region_multiplier",
+          "legendFormat": "Opus 4.6",
+          "refId": "A"
+        },
+        {
+          "expr": "(\n  sum(rate(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"input\"}[5m])) / 1e6 * 3 +\n  sum(rate(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"output\"}[5m])) / 1e6 * 15 +\n  (sum(rate(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"cacheRead\"}[5m])) / 1e6 * 0.3 or vector(0)) +\n  (sum(rate(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"cacheCreation\"}[5m])) / 1e6 * 3.75 or vector(0))\n) * 3600 * $bedrock_region_multiplier",
+          "legendFormat": "Sonnet 4.6",
+          "refId": "B"
+        },
+        {
+          "expr": "(\n  sum(rate(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"input\"}[5m])) / 1e6 * 1 +\n  sum(rate(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"output\"}[5m])) / 1e6 * 5 +\n  (sum(rate(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"cacheRead\"}[5m])) / 1e6 * 0.1 or vector(0)) +\n  (sum(rate(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"cacheCreation\"}[5m])) / 1e6 * 1.25 or vector(0))\n) * 3600 * $bedrock_region_multiplier",
+          "legendFormat": "Haiku 4.5",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Token Usage Over Time by Type",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "fillOpacity": 15, "stacking": { "mode": "normal" } }
+        }
+      },
+      "options": { "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "expr": "sum(rate(claude_code_token_usage{model=~\"$model\", user_id=~\"$user_id\", type=\"input\"}[5m])) * 60",
+          "legendFormat": "Input",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(claude_code_token_usage{model=~\"$model\", user_id=~\"$user_id\", type=\"output\"}[5m])) * 60",
+          "legendFormat": "Output",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(claude_code_token_usage{model=~\"$model\", user_id=~\"$user_id\", type=\"cacheRead\"}[5m])) * 60",
+          "legendFormat": "Cache Read",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(claude_code_token_usage{model=~\"$model\", user_id=~\"$user_id\", type=\"cacheCreation\"}[5m])) * 60",
+          "legendFormat": "Cache Write",
+          "refId": "D"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Bedrock Cost by User",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "unit", "value": "currencyUSD" }, { "id": "displayName", "value": "Est. Bedrock Cost" }] },
+          { "matcher": { "id": "byName", "options": "user_id" }, "properties": [{ "id": "displayName", "value": "User" }] }
+        ]
+      },
+      "options": {
+        "sortBy": [{ "displayName": "Est. Bedrock Cost", "desc": true }]
+      },
+      "transformations": [
+        { "id": "labelsToFields", "options": {} },
+        { "id": "organize", "options": { "excludeByName": { "Time": true } } }
+      ],
+      "targets": [
+        {
+          "expr": "(\n  (sum by(user_id) (increase(claude_code_token_usage{type=\"input\",model=\"claude-opus-4-6\"}[$__range])) / 1e6 * 5 or sum by(user_id) (claude_code_token_usage{type=\"input\",model=\"claude-opus-4-6\"}) * 0)\n  + (sum by(user_id) (increase(claude_code_token_usage{type=\"output\",model=\"claude-opus-4-6\"}[$__range])) / 1e6 * 25 or sum by(user_id) (claude_code_token_usage{type=\"output\",model=\"claude-opus-4-6\"}) * 0)\n  + (sum by(user_id) (increase(claude_code_token_usage{type=\"input\",model=\"claude-sonnet-4-6\"}[$__range])) / 1e6 * 3 or sum by(user_id) (claude_code_token_usage{type=\"input\",model=\"claude-sonnet-4-6\"}) * 0)\n  + (sum by(user_id) (increase(claude_code_token_usage{type=\"output\",model=\"claude-sonnet-4-6\"}[$__range])) / 1e6 * 15 or sum by(user_id) (claude_code_token_usage{type=\"output\",model=\"claude-sonnet-4-6\"}) * 0)\n  + (sum by(user_id) (increase(claude_code_token_usage{type=\"input\",model=\"claude-haiku-4-5-20251001\"}[$__range])) / 1e6 * 1 or sum by(user_id) (claude_code_token_usage{type=\"input\",model=\"claude-haiku-4-5-20251001\"}) * 0)\n  + (sum by(user_id) (increase(claude_code_token_usage{type=\"output\",model=\"claude-haiku-4-5-20251001\"}[$__range])) / 1e6 * 5 or sum by(user_id) (claude_code_token_usage{type=\"output\",model=\"claude-haiku-4-5-20251001\"}) * 0)\n) * $bedrock_region_multiplier",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Bedrock Cost by Model",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" } },
+      "targets": [
+        {
+          "expr": "(\n  sum(increase(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"input\"}[$__range])) / 1e6 * 5\n  + sum(increase(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"output\"}[$__range])) / 1e6 * 25\n  + (sum(increase(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"cacheRead\"}[$__range])) / 1e6 * 0.5 or vector(0))\n  + (sum(increase(claude_code_token_usage{model=\"claude-opus-4-6\", user_id=~\"$user_id\", type=\"cacheCreation\"}[$__range])) / 1e6 * 6.25 or vector(0))\n) * $bedrock_region_multiplier",
+          "legendFormat": "Opus 4.6",
+          "refId": "A"
+        },
+        {
+          "expr": "(\n  sum(increase(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"input\"}[$__range])) / 1e6 * 3\n  + sum(increase(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"output\"}[$__range])) / 1e6 * 15\n  + (sum(increase(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"cacheRead\"}[$__range])) / 1e6 * 0.3 or vector(0))\n  + (sum(increase(claude_code_token_usage{model=\"claude-sonnet-4-6\", user_id=~\"$user_id\", type=\"cacheCreation\"}[$__range])) / 1e6 * 3.75 or vector(0))\n) * $bedrock_region_multiplier",
+          "legendFormat": "Sonnet 4.6",
+          "refId": "B"
+        },
+        {
+          "expr": "(\n  sum(increase(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"input\"}[$__range])) / 1e6 * 1\n  + sum(increase(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"output\"}[$__range])) / 1e6 * 5\n  + (sum(increase(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"cacheRead\"}[$__range])) / 1e6 * 0.1 or vector(0))\n  + (sum(increase(claude_code_token_usage{model=\"claude-haiku-4-5-20251001\", user_id=~\"$user_id\", type=\"cacheCreation\"}[$__range])) / 1e6 * 1.25 or vector(0))\n) * $bedrock_region_multiplier",
+          "legendFormat": "Haiku 4.5",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Sessions Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "fillOpacity": 15 } }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(claude_code_session_count{user_id=~\"$user_id\"}[5m])) * 3600",
+          "legendFormat": "Sessions/hr",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "title": "Bedrock Pricing Reference",
+      "description": "Current Bedrock on-demand pricing used in this dashboard. Update these when Bedrock pricing changes.",
+      "type": "text",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 21 },
+      "options": {
+        "mode": "markdown",
+        "content": "## Bedrock On-Demand Pricing (per 1M tokens)\n\n| Model | Input | Output | Cache Write (1.25x) | Cache Read (0.1x) |\n|-------|-------|--------|--------------------|-----------|\n| **Opus 4.6** | $5.00 | $25.00 | $6.25 | $0.50 |\n| **Opus 4** | $15.00 | $75.00 | $18.75 | $1.50 |\n| **Sonnet 4.6** | $3.00 | $15.00 | $3.75 | $0.30 |\n| **Sonnet 4** | $3.00 | $15.00 | $3.75 | $0.30 |\n| **Haiku 4.5** | $1.00 | $5.00 | $1.25 | $0.10 |\n\n**Regional endpoint multiplier:** select *Regional (+10%)* in the dashboard variable above to apply the 10% surcharge for Bedrock regional endpoints (applies to models 4.5+).\n\n**Why not use `claude_code_cost_usage`?** That metric calculates cost using Anthropic's direct API pricing, which may differ from Bedrock pricing (especially for older model versions and regional endpoints). This dashboard computes cost from `claude_code_token_usage` (accurate token counts from the API response) multiplied by Bedrock rates, giving an estimate that matches your AWS bill.\n\n**To update pricing:** edit the PromQL constants in each panel, or use the recording rules in `mimir/bedrock-pricing-rules.yml`."
+      }
+    }
+  ],
+  "schemaVersion": 39
+}

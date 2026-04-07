@@ -1,0 +1,97 @@
+# Mimir Recording Rules — Bedrock Cost from Token Usage
+#
+# Computes estimated Bedrock cost from claude_code_token_usage using
+# Bedrock's pricing rates. Update the rate constants when pricing changes.
+#
+# These rules run inside Mimir's ruler and produce new series that
+# Grafana dashboards can query directly.
+#
+# Token pricing per 1M tokens (Bedrock On-Demand, US regions):
+#
+#   claude-opus-4-6:           input=$5,   output=$25
+#   claude-opus-4:             input=$15,  output=$75
+#   claude-sonnet-4-6:         input=$3,   output=$15
+#   claude-sonnet-4:           input=$3,   output=$15
+#   claude-haiku-4-5-20251001: input=$1,   output=$5
+#   claude-3-5-sonnet-v2:      input=$6,   output=$30
+#
+# Cache pricing (all models): write=1.25x input, read=0.1x input
+
+groups:
+  - name: bedrock_cost
+    interval: 1m
+    rules:
+
+      # ── Per-model, per-type cost rate ($/sec) ──
+
+      # Opus 4.6
+      - record: claude_code:bedrock_cost_rate:by_model_type
+        expr: |
+          rate(claude_code_token_usage{model="claude-opus-4-6", type="input"}[5m]) / 1e6 * 5
+          or
+          rate(claude_code_token_usage{model="claude-opus-4-6", type="output"}[5m]) / 1e6 * 25
+          or
+          rate(claude_code_token_usage{model="claude-opus-4-6", type="cacheRead"}[5m]) / 1e6 * 0.5
+          or
+          rate(claude_code_token_usage{model="claude-opus-4-6", type="cacheCreation"}[5m]) / 1e6 * 6.25
+
+      # Opus 4
+      - record: claude_code:bedrock_cost_rate:by_model_type
+        expr: |
+          rate(claude_code_token_usage{model="claude-opus-4", type="input"}[5m]) / 1e6 * 15
+          or
+          rate(claude_code_token_usage{model="claude-opus-4", type="output"}[5m]) / 1e6 * 75
+          or
+          rate(claude_code_token_usage{model="claude-opus-4", type="cacheRead"}[5m]) / 1e6 * 1.5
+          or
+          rate(claude_code_token_usage{model="claude-opus-4", type="cacheCreation"}[5m]) / 1e6 * 18.75
+
+      # Sonnet 4.6
+      - record: claude_code:bedrock_cost_rate:by_model_type
+        expr: |
+          rate(claude_code_token_usage{model="claude-sonnet-4-6", type="input"}[5m]) / 1e6 * 3
+          or
+          rate(claude_code_token_usage{model="claude-sonnet-4-6", type="output"}[5m]) / 1e6 * 15
+          or
+          rate(claude_code_token_usage{model="claude-sonnet-4-6", type="cacheRead"}[5m]) / 1e6 * 0.3
+          or
+          rate(claude_code_token_usage{model="claude-sonnet-4-6", type="cacheCreation"}[5m]) / 1e6 * 3.75
+
+      # Sonnet 4
+      - record: claude_code:bedrock_cost_rate:by_model_type
+        expr: |
+          rate(claude_code_token_usage{model="claude-sonnet-4", type="input"}[5m]) / 1e6 * 3
+          or
+          rate(claude_code_token_usage{model="claude-sonnet-4", type="output"}[5m]) / 1e6 * 15
+          or
+          rate(claude_code_token_usage{model="claude-sonnet-4", type="cacheRead"}[5m]) / 1e6 * 0.3
+          or
+          rate(claude_code_token_usage{model="claude-sonnet-4", type="cacheCreation"}[5m]) / 1e6 * 3.75
+
+      # Haiku 4.5
+      - record: claude_code:bedrock_cost_rate:by_model_type
+        expr: |
+          rate(claude_code_token_usage{model="claude-haiku-4-5-20251001", type="input"}[5m]) / 1e6 * 1
+          or
+          rate(claude_code_token_usage{model="claude-haiku-4-5-20251001", type="output"}[5m]) / 1e6 * 5
+          or
+          rate(claude_code_token_usage{model="claude-haiku-4-5-20251001", type="cacheRead"}[5m]) / 1e6 * 0.1
+          or
+          rate(claude_code_token_usage{model="claude-haiku-4-5-20251001", type="cacheCreation"}[5m]) / 1e6 * 1.25
+
+      # ── Aggregated cost totals ──
+
+      # Total Bedrock cost rate across all models and types
+      - record: claude_code:bedrock_cost_rate:total
+        expr: |
+          sum(claude_code:bedrock_cost_rate:by_model_type)
+
+      # Bedrock cost rate by model
+      - record: claude_code:bedrock_cost_rate:by_model
+        expr: |
+          sum(claude_code:bedrock_cost_rate:by_model_type) by (model)
+
+      # Bedrock cost rate by user
+      - record: claude_code:bedrock_cost_rate:by_user
+        expr: |
+          sum(claude_code:bedrock_cost_rate:by_model_type) by (user_id)
