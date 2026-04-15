@@ -21,7 +21,8 @@ set -euo pipefail
 # -------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-COMPOSE_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+COMPOSE_DIR="${PROJECT_ROOT}/backends/mimir"
 cd "$SCRIPT_DIR"
 
 MIMIR_URL="${MIMIR_URL:-http://localhost:9010/prometheus}"

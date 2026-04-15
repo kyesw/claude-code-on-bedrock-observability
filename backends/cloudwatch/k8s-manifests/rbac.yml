@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector
+  namespace: otel-collectors
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/part-of: claude-code-observability
+  annotations:
+    # ── EDIT THIS ──
+    # IRSA role that grants CloudWatch Logs write access.
+    # The role needs: logs:CreateLogGroup, logs:CreateLogStream,
+    # logs:PutLogEvents, logs:DescribeLogStreams
+    eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT:role/otel-collector-cloudwatch"

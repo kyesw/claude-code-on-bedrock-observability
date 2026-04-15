@@ -171,9 +171,24 @@ and embedding them in queries avoids adding a pricing lookup service.
 
 ## Relevant Files
 
+### Mimir backend
+
 | File | What to look at |
 |------|----------------|
-| `grafana/provisioning/dashboards/json/claude-code-bedrock-cost.json` | Grafana dashboard — cost queries, variables, panel layout |
-| `mimir/bedrock-pricing-rules.yml` | Recording rules for pre-computed cost metrics |
-| `mimir/mimir.yml` | Mimir config — ruler component for recording rules |
+| `backends/mimir/grafana/provisioning/dashboards/json/claude-code-bedrock-cost.json` | Grafana dashboard with PromQL cost queries |
+| `backends/mimir/bedrock-pricing-rules.yml` | Recording rules for pre-computed cost metrics |
+| `backends/mimir/mimir.yml` | Mimir config — ruler component for recording rules |
+
+### CloudWatch backend
+
+| File | What to look at |
+|------|----------------|
+| `backends/cloudwatch/dashboard.json` | Native CloudWatch dashboard with Bedrock cost math expressions |
+| `backends/cloudwatch/deploy-dashboard.sh` | Deploy the dashboard via AWS CLI |
+| `backends/cloudwatch/collector.yml` | Collector config with dimension declarations |
+
+### Shared
+
+| File | What to look at |
+|------|----------------|
 | `docs/multi-collector.md` | Companion doc — ensuring accurate token counts through multi-collector ingestion |

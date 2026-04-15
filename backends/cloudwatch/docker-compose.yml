@@ -1,0 +1,41 @@
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "4318:4318"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - collector-1
+      - collector-2
+      - collector-3
+
+  collector-1:
+    image: otel/opentelemetry-collector-contrib:0.149.0
+    volumes:
+      - ./collector.yml:/etc/otelcol-contrib/config.yaml:ro
+    environment:
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+
+  collector-2:
+    image: otel/opentelemetry-collector-contrib:0.149.0
+    volumes:
+      - ./collector.yml:/etc/otelcol-contrib/config.yaml:ro
+    environment:
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+
+  collector-3:
+    image: otel/opentelemetry-collector-contrib:0.149.0
+    volumes:
+      - ./collector.yml:/etc/otelcol-contrib/config.yaml:ro
+    environment:
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN

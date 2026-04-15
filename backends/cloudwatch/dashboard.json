@@ -1,0 +1,427 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" type=\"input\"', 'Sum', 300))",
+              "id": "input_cost",
+              "label": "Input",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" type=\"output\"', 'Sum', 300))",
+              "id": "output_cost",
+              "label": "Output",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" type=\"cacheRead\"', 'Sum', 300))",
+              "id": "cache_read_cost",
+              "label": "Cache Read",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" type=\"cacheCreation\"', 'Sum', 300))",
+              "id": "cache_write_cost",
+              "label": "Cache Write",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "input_cost + output_cost + cache_read_cost + cache_write_cost",
+              "id": "total_tokens",
+              "label": "Total Tokens"
+            }
+          ]
+        ],
+        "view": "singleValue",
+        "region": "${AWS_REGION}",
+        "title": "Total Tokens",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 6,
+      "y": 0,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,user.id} MetricName=\"claude_code.session.count\"', 'Sum', 300))",
+              "id": "sessions",
+              "label": "Sessions"
+            }
+          ]
+        ],
+        "view": "singleValue",
+        "region": "${AWS_REGION}",
+        "title": "Total Sessions",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 0,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model} MetricName=\"claude_code.cost.usage\"', 'Sum', 300))",
+              "id": "cost",
+              "label": "Cost (Anthropic rates)"
+            }
+          ]
+        ],
+        "view": "singleValue",
+        "region": "${AWS_REGION}",
+        "title": "Claude Code Cost (Anthropic Rates)",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 18,
+      "y": 0,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-opus-4-6\" type=\"input\"', 'Sum', 300)) / 1000000 * 5 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-opus-4-6\" type=\"output\"', 'Sum', 300)) / 1000000 * 25 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-opus-4-6\" type=\"cacheRead\"', 'Sum', 300)) / 1000000 * 0.5 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-opus-4-6\" type=\"cacheCreation\"', 'Sum', 300)) / 1000000 * 6.25",
+              "id": "opus_cost",
+              "label": "Opus",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-sonnet-4-6\" type=\"input\"', 'Sum', 300)) / 1000000 * 3 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-sonnet-4-6\" type=\"output\"', 'Sum', 300)) / 1000000 * 15 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-sonnet-4-6\" type=\"cacheRead\"', 'Sum', 300)) / 1000000 * 0.3 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-sonnet-4-6\" type=\"cacheCreation\"', 'Sum', 300)) / 1000000 * 3.75",
+              "id": "sonnet_cost",
+              "label": "Sonnet",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-haiku-4-5-20251001\" type=\"input\"', 'Sum', 300)) / 1000000 * 1 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-haiku-4-5-20251001\" type=\"output\"', 'Sum', 300)) / 1000000 * 5 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-haiku-4-5-20251001\" type=\"cacheRead\"', 'Sum', 300)) / 1000000 * 0.1 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-haiku-4-5-20251001\" type=\"cacheCreation\"', 'Sum', 300)) / 1000000 * 1.25",
+              "id": "haiku_cost",
+              "label": "Haiku",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "opus_cost + sonnet_cost + haiku_cost",
+              "id": "total_bedrock_cost",
+              "label": "Est. Bedrock Cost"
+            }
+          ]
+        ],
+        "view": "singleValue",
+        "region": "${AWS_REGION}",
+        "title": "Estimated Bedrock Cost",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-opus-4-6", "type", "input", { "label": "Opus Input", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-opus-4-6", "type", "output", { "label": "Opus Output", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-sonnet-4-6", "type", "input", { "label": "Sonnet Input", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-sonnet-4-6", "type", "output", { "label": "Sonnet Output", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-haiku-4-5-20251001", "type", "input", { "label": "Haiku Input", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-haiku-4-5-20251001", "type", "output", { "label": "Haiku Output", "stat": "Sum" }]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "${AWS_REGION}",
+        "title": "Token Usage by Model",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 6,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-opus-4-6", "type", "cacheRead", { "label": "Opus Cache Read", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-opus-4-6", "type", "cacheCreation", { "label": "Opus Cache Write", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-sonnet-4-6", "type", "cacheRead", { "label": "Sonnet Cache Read", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-sonnet-4-6", "type", "cacheCreation", { "label": "Sonnet Cache Write", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-haiku-4-5-20251001", "type", "cacheRead", { "label": "Haiku Cache Read", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.token.usage", "model", "claude-haiku-4-5-20251001", "type", "cacheCreation", { "label": "Haiku Cache Write", "stat": "Sum" }]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "${AWS_REGION}",
+        "title": "Cache Token Usage by Model",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 12,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-opus-4-6\" type=\"input\"', 'Sum', 300)) / 1000000 * 5 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-opus-4-6\" type=\"output\"', 'Sum', 300)) / 1000000 * 25 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-opus-4-6\" type=\"cacheRead\"', 'Sum', 300)) / 1000000 * 0.5 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-opus-4-6\" type=\"cacheCreation\"', 'Sum', 300)) / 1000000 * 6.25",
+              "id": "opus",
+              "label": "Opus 4.6"
+            }
+          ],
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-sonnet-4-6\" type=\"input\"', 'Sum', 300)) / 1000000 * 3 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-sonnet-4-6\" type=\"output\"', 'Sum', 300)) / 1000000 * 15 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-sonnet-4-6\" type=\"cacheRead\"', 'Sum', 300)) / 1000000 * 0.3 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-sonnet-4-6\" type=\"cacheCreation\"', 'Sum', 300)) / 1000000 * 3.75",
+              "id": "sonnet",
+              "label": "Sonnet 4.6"
+            }
+          ],
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-haiku-4-5-20251001\" type=\"input\"', 'Sum', 300)) / 1000000 * 1 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-haiku-4-5-20251001\" type=\"output\"', 'Sum', 300)) / 1000000 * 5 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-haiku-4-5-20251001\" type=\"cacheRead\"', 'Sum', 300)) / 1000000 * 0.1 + SUM(SEARCH('{ClaudeCode,model,type} MetricName=\"claude_code.token.usage\" model=\"claude-haiku-4-5-20251001\" type=\"cacheCreation\"', 'Sum', 300)) / 1000000 * 1.25",
+              "id": "haiku",
+              "label": "Haiku 4.5"
+            }
+          ]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "${AWS_REGION}",
+        "title": "Estimated Bedrock Cost Over Time by Model",
+        "period": 300,
+        "yAxis": { "left": { "label": "USD" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 12,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SEARCH('{ClaudeCode,user.id} MetricName=\"claude_code.session.count\"', 'Sum', 300)",
+              "id": "sessions_by_user",
+              "label": ""
+            }
+          ]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "${AWS_REGION}",
+        "title": "Sessions Over Time by User",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 18,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SEARCH('{ClaudeCode,user.id} MetricName=\"claude_code.cost.usage\"', 'Sum', 300)",
+              "id": "cost_by_user",
+              "label": ""
+            }
+          ]
+        ],
+        "view": "bar",
+        "region": "${AWS_REGION}",
+        "title": "Estimated Bedrock Cost by User",
+        "period": 300,
+        "yAxis": { "left": { "label": "USD" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 18,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SEARCH('{ClaudeCode,user.id} MetricName=\"claude_code.cost.usage\"', 'Sum', 300)",
+              "id": "cost_by_user_ts",
+              "label": ""
+            }
+          ]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "${AWS_REGION}",
+        "title": "Estimated Bedrock Cost by User Over Time",
+        "period": 300,
+        "yAxis": { "left": { "label": "USD" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 24,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SEARCH('{ClaudeCode,model} MetricName=\"claude_code.cost.usage\"', 'Sum', 300)",
+              "id": "cost_by_model",
+              "label": ""
+            }
+          ]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "${AWS_REGION}",
+        "title": "Claude Code Cost Over Time by Model (Anthropic Rates)",
+        "period": 300,
+        "yAxis": { "left": { "label": "USD" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 24,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["ClaudeCode", "claude_code.lines_of_code.count", "type", "added", { "label": "Lines Added", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.lines_of_code.count", "type", "removed", { "label": "Lines Removed", "stat": "Sum" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "${AWS_REGION}",
+        "title": "Lines of Code Changed",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 30,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["ClaudeCode", "claude_code.active_time.total", "type", "cli", { "label": "CLI Active Time", "stat": "Sum" }],
+          ["ClaudeCode", "claude_code.active_time.total", "type", "user", { "label": "User Active Time", "stat": "Sum" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "${AWS_REGION}",
+        "title": "Active Time (seconds)",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 30,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,user.id} MetricName=\"claude_code.commit.count\"', 'Sum', 300))",
+              "id": "commits",
+              "label": "Commits"
+            }
+          ],
+          [
+            {
+              "expression": "SUM(SEARCH('{ClaudeCode,user.id} MetricName=\"claude_code.pull_request.count\"', 'Sum', 300))",
+              "id": "prs",
+              "label": "Pull Requests"
+            }
+          ]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "${AWS_REGION}",
+        "title": "Commits & Pull Requests",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 30,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            {
+              "expression": "SEARCH('{ClaudeCode,tool_name,decision} MetricName=\"claude_code.code_edit_tool.decision\"', 'Sum', 300)",
+              "id": "decisions",
+              "label": ""
+            }
+          ]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "${AWS_REGION}",
+        "title": "Edit Tool Decisions",
+        "period": 300
+      }
+    },
+    {
+      "type": "text",
+      "x": 0,
+      "y": 36,
+      "width": 24,
+      "height": 5,
+      "properties": {
+        "markdown": "**Tip:** If the dashboard appears empty, check your timezone setting (top-right) — switch to **UTC** if your local timezone doesn't match the data range.\n\n## Bedrock Pricing Reference (per 1M tokens)\n\n| Model | Input | Output | Cache Read (0.1x) | Cache Write (1.25x) |\n|-------|------:|-------:|------------------:|--------------------:|\n| **Opus 4.6** | $5.00 | $25.00 | $0.50 | $6.25 |\n| **Opus 4** | $15.00 | $75.00 | $1.50 | $18.75 |\n| **Sonnet 4.6** | $3.00 | $15.00 | $0.30 | $3.75 |\n| **Sonnet 4** | $3.00 | $15.00 | $0.30 | $3.75 |\n| **Haiku 4.5** | $1.00 | $5.00 | $0.10 | $1.25 |\n\nThe **Estimated Bedrock Cost** and **Bedrock Cost by User** panels use `claude_code.cost.usage` which is computed from token counts at Anthropic API rates. For current models in US regions, Anthropic and Bedrock per-token rates are identical. **For non-US Bedrock regions, actual cost is approximately 10% higher** (multiply by 1.1).\n\nThe aggregate **Estimated Bedrock Cost** (top row) cross-checks this by computing `claude_code.token.usage` x Bedrock rates directly. Both methods should agree for US regions."
+      }
+    }
+  ]
+}

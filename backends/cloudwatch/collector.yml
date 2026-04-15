@@ -1,0 +1,89 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 80
+    spike_limit_percentage: 25
+
+  batch:
+    send_batch_size: 1000
+    timeout: 5s
+
+  # Drop session.id to reduce CloudWatch dimension cardinality.
+  # CloudWatch charges per unique dimension combination — session.id
+  # creates a new dimension set per invocation, which gets expensive.
+  # Remove this processor if you need per-session granularity.
+  transform:
+    metric_statements:
+      - context: datapoint
+        statements:
+          - delete_key(attributes, "session.id")
+
+exporters:
+  awsemf:
+    namespace: ClaudeCode
+    # ── EDIT THIS ──
+    # Override via AWS_REGION env var in docker-compose / k8s deployment.
+    region: ${env:AWS_REGION}
+    log_group_name: /metrics/claude-code
+    dimension_rollup_option: NoDimensionRollup
+    # metric_declarations use OTel metric names (with dots).
+    # The awsemf exporter matches against original OTel names,
+    # then converts dots to underscores in CloudWatch.
+    # Dimension names also use dots as emitted by the SDK.
+    metric_declarations:
+      - dimensions:
+          - [model, type, user.id]
+          - [model, type]
+          - [user.id]
+        metric_name_selectors:
+          - claude_code.token.usage
+      - dimensions:
+          - [model, user.id]
+          - [model]
+          - [user.id]
+        metric_name_selectors:
+          - claude_code.cost.usage
+      - dimensions:
+          - [user.id, terminal.type]
+          - [user.id]
+        metric_name_selectors:
+          - claude_code.session.count
+      - dimensions:
+          - [type, user.id]
+          - [type]
+        metric_name_selectors:
+          - claude_code.lines_of_code.count
+          - claude_code.active_time.total
+      - dimensions:
+          - [user.id]
+        metric_name_selectors:
+          - claude_code.commit.count
+          - claude_code.pull_request.count
+      - dimensions:
+          - [tool_name, decision, language]
+          - [tool_name, decision]
+        metric_name_selectors:
+          - claude_code.code_edit_tool.decision
+
+service:
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, transform, batch]
+      exporters: [awsemf]

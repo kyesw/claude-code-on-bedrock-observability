@@ -23,8 +23,7 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
 
     # ── NO sticky sessions ──
-    # Delta temporality makes each export self-contained.
-    # Round-robin is safe and gives even load distribution.
+    # Collectors are stateless passthrough. Round-robin is safe.
     alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=false
 spec:
   rules:

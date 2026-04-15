@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   nginx:
     image: nginx:1.25-alpine
@@ -15,17 +13,17 @@ services:
   collector-1:
     image: otel/opentelemetry-collector-contrib:0.149.0
     volumes:
-      - ./otel/collector.yml:/etc/otelcol-contrib/config.yaml:ro
+      - ./collector.yml:/etc/otelcol-contrib/config.yaml:ro
 
   collector-2:
     image: otel/opentelemetry-collector-contrib:0.149.0
     volumes:
-      - ./otel/collector.yml:/etc/otelcol-contrib/config.yaml:ro
+      - ./collector.yml:/etc/otelcol-contrib/config.yaml:ro
 
   collector-3:
     image: otel/opentelemetry-collector-contrib:0.149.0
     volumes:
-      - ./otel/collector.yml:/etc/otelcol-contrib/config.yaml:ro
+      - ./collector.yml:/etc/otelcol-contrib/config.yaml:ro
 
   mimir:
     image: grafana/mimir:2.17.0
@@ -35,7 +33,7 @@ services:
     ports:
       - "9010:9009"
     volumes:
-      - ./mimir/mimir.yml:/etc/mimir/mimir.yml:ro
+      - ./mimir.yml:/etc/mimir/mimir.yml:ro
       - mimir-data:/data
 
   grafana:

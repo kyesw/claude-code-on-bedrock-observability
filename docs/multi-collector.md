@@ -1,4 +1,4 @@
-# Multi-Collector Ingestion — ALB + OTel Collectors + Mimir
+# Multi-Collector Ingestion — ALB + OTel Collectors
 
 ## The Problem
 
@@ -267,8 +267,10 @@ Only Claude Code's native labels. No `collector_instance`, no `k8s_*`.
 ## Running the Validation Test
 
 ```bash
+cd backends/mimir
 docker-compose up -d
-cd simulator
+
+cd ../../simulator
 bash run-test.sh
 ```
 
@@ -276,13 +278,27 @@ The test tears down and rebuilds Mimir between phases to ensure clean state.
 
 ## Relevant Files
 
+### Mimir backend (`backends/mimir/`)
+
 | File | What to look at |
 |------|----------------|
-| `otel/collector.yml` | Stateless passthrough pipeline — `memory_limiter` + `batch`, nothing else |
-| `mimir/mimir.yml` | `out_of_order_time_window: 5m` under limits |
-| `nginx/nginx.conf` | Round-robin upstream simulating an ALB |
-| `k8s-manifests/` | Production-ready K8s deployment (Deployment, Service, ALB Ingress, HPA, PDB) |
+| `backends/mimir/collector.yml` | Stateless passthrough pipeline — `memory_limiter` + `batch`, nothing else |
+| `backends/mimir/mimir.yml` | `out_of_order_time_window: 5m` under limits |
+| `backends/mimir/nginx/nginx.conf` | Round-robin upstream simulating an ALB |
+| `backends/mimir/k8s-manifests/` | Production K8s deployment (Deployment, Service, ALB Ingress, HPA, PDB) |
+| `backends/mimir/docker-compose.yml` | Local test environment: nginx + 3 collectors + Mimir + Grafana |
+
+### CloudWatch backend (`backends/cloudwatch/`)
+
+| File | What to look at |
+|------|----------------|
+| `backends/cloudwatch/collector.yml` | Pipeline with `awsemf` exporter and `session_id` drop |
+| `backends/cloudwatch/k8s-manifests/` | Production K8s deployment with IRSA |
+
+### Shared
+
+| File | What to look at |
+|------|----------------|
 | `simulator/simulator.mjs` | Emits all 8 Claude Code metrics with realistic values |
 | `simulator/validate.mjs` | Queries Mimir and compares against ground truth |
 | `simulator/run-test.sh` | Orchestrates the validation test |
-| `docker-compose.yml` | Local test environment: nginx + 3 collectors + Mimir + Grafana |

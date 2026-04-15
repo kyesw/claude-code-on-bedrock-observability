@@ -11,8 +11,7 @@ metadata:
     # These are applied here for reference. If using AWS Load Balancer
     # Controller, move them to the Ingress resource instead.
     #
-    # No sticky sessions needed — delta temporality makes collectors
-    # stateless from the client's perspective.
+    # No sticky sessions needed — collectors are stateless passthrough.
 spec:
   type: NodePort
   selector:

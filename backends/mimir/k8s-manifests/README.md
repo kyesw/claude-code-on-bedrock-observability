@@ -65,13 +65,17 @@ kubectl apply -f .
 
 ## Claude Code client configuration
 
-Set these environment variables for each Claude Code user:
+In your `settings.json` (or equivalent IDE settings):
 
-```bash
-export CLAUDE_CODE_ENABLE_TELEMETRY=1
-export OTEL_METRICS_EXPORTER=otlp
-export OTEL_EXPORTER_OTLP_ENDPOINT=https://otel-ingest.example.com:4318
-export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative
+```jsonc
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://otel-ingest.example.com:4318",
+    "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "cumulative"
+  }
+}
 ```
 
 ## Verify

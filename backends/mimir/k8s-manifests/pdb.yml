@@ -1,0 +1,15 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: otel-collector
+  namespace: otel-collectors
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/part-of: claude-code-observability
+spec:
+  # Keep at least 2 of 3 collectors running during node drains
+  # and rolling updates. Safe because collectors are stateless.
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: otel-collector
